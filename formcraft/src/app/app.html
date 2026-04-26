@@ -1,0 +1,15 @@
+<div class="relative w-full h-screen overflow-hidden text-[var(--color-on-surface)] selection:bg-[var(--color-primary)] selection:text-[var(--color-on-primary)] font-body bg-[var(--color-background)]">
+  
+  <!-- Immersive Mesh Gradient Background (always visible behind all routes) -->
+  <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-gradient-to-br from-[#f0f9ff] via-[#e0e7ff] to-[#fce7f3]">
+    <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#bae6fd]/60 blur-[100px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#fbcfe8]/60 blur-[120px]"></div>
+    <div class="absolute top-[30%] left-[60%] w-[40vw] h-[40vw] rounded-full bg-[#c4b5fd]/60 blur-[100px]"></div>
+  </div>
+
+  <!-- Router Outlet: Renders Builder or Export screen -->
+  <div class="absolute inset-0 z-10">
+    <router-outlet />
+  </div>
+
+</div>

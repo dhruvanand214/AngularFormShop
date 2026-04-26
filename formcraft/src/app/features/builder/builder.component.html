@@ -1,0 +1,370 @@
+<!-- FLOATING HEADER -->
+<header class="absolute top-6 left-1/2 -translate-x-1/2 z-30 flex items-center justify-between w-full max-w-[95%] px-8 py-4 bg-[var(--color-surface-container-low)]/40 backdrop-blur-2xl border border-[var(--color-outline-variant)]/20 rounded-2xl shadow-2xl">
+  <div class="flex flex-col">
+    <h1 class="text-2xl font-bold font-display tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)]">FormCraft</h1>
+    <span class="text-xs text-[var(--color-on-surface-variant)] tracking-widest uppercase">Ethereal Architect</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <a routerLink="/export"
+       class="px-5 py-2.5 rounded-xl border border-[var(--color-outline-variant)]/30 text-[var(--color-primary)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/10 transition-all flex items-center gap-2 text-sm font-medium">
+      <span class="material-symbols-outlined text-sm">code</span>
+      Export Code
+    </a>
+    <button (click)="state.togglePreview()"
+            class="px-6 py-2.5 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-container)] text-[var(--color-on-primary)] font-medium shadow-lg hover:shadow-[0_0_20px_var(--color-primary-dim)] hover:brightness-110 transition-all flex items-center gap-2 text-sm">
+      <span class="material-symbols-outlined text-sm">visibility</span>
+      Preview Form
+    </button>
+  </div>
+</header>
+
+@if (!state.isPreviewMode()) {
+  <!-- FLOATING LEFT PANEL (Palette) -->
+  <aside class="absolute top-[120px] left-8 bottom-8 w-72 z-20 flex flex-col bg-[var(--color-surface-container-low)]/40 backdrop-blur-2xl border border-[var(--color-outline-variant)]/20 rounded-3xl shadow-2xl overflow-hidden">
+    <div class="p-6 border-b border-[var(--color-outline-variant)]/10">
+      <h2 class="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest mb-1">Components</h2>
+      <p class="text-sm text-[var(--color-on-surface-variant)]/70">Drag elements to canvas</p>
+    </div>
+    <div class="flex-1 p-4 overflow-y-auto custom-scrollbar" cdkDropList id="paletteList" [cdkDropListConnectedTo]="['canvasList']" [cdkDropListData]="state.availableFields">
+      @for (field of state.availableFields; track field.type) {
+        <div cdkDrag class="group flex items-center gap-4 p-4 mb-3 rounded-xl bg-[var(--color-surface-container-high)]/50 border border-[var(--color-outline-variant)]/10 cursor-grab hover:bg-[var(--color-surface-container-highest)] hover:border-[var(--color-primary)]/30 transition-all backdrop-blur-sm">
+          <div class="w-8 h-8 rounded-lg bg-[var(--color-surface-variant)] flex items-center justify-center text-[var(--color-primary)] group-hover:bg-[var(--color-primary)]/20 transition-colors">
+            <span class="material-symbols-outlined text-sm">{{ field.icon }}</span>
+          </div>
+          <span class="font-medium text-sm">{{ field.label }}</span>
+          <!-- Custom Drag Preview -->
+          <div *cdkDragPreview class="flex items-center gap-4 p-4 rounded-xl bg-[var(--color-surface-container-highest)] border border-[var(--color-primary)] shadow-[0_10px_40px_rgba(0,0,0,0.3)] w-64 backdrop-blur-xl">
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/20 flex items-center justify-center text-[var(--color-primary)]">
+              <span class="material-symbols-outlined text-sm">{{ field.icon }}</span>
+            </div>
+            <span class="font-medium text-sm text-[var(--color-on-surface)]">{{ field.label }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- CENTER WORKSPACE -->
+  <main class="absolute inset-0 z-10 flex justify-center pt-[120px] px-[360px] pb-8 overflow-y-auto custom-scrollbar">
+    <div class="w-full max-w-3xl flex flex-col gap-6 relative">
+      <!-- Canvas Container -->
+      <div class="w-full min-h-[600px] bg-[var(--color-surface-container)]/30 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 rounded-[2rem] shadow-2xl p-8 pb-32 transition-all relative"
+           cdkDropList id="canvasList" [cdkDropListData]="state.formFields()" (cdkDropListDropped)="drop($event)">
+        
+        <div class="mb-8 border-b border-[var(--color-outline-variant)]/20 pb-4">
+          <input type="text" class="bg-transparent border-none outline-none text-3xl font-display font-bold text-[var(--color-on-surface)] placeholder-[var(--color-on-surface-variant)]/50 w-full" placeholder="Untitled Form">
+        </div>
+
+        @if (state.formFields().length === 0) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
+            <div class="w-20 h-20 rounded-2xl border-2 border-dashed border-[var(--color-outline-variant)] flex items-center justify-center mb-4 text-[var(--color-outline-variant)]">
+              <span class="material-symbols-outlined text-4xl">add</span>
+            </div>
+            <p class="text-lg font-medium text-[var(--color-on-surface-variant)]">Drag and drop fields here</p>
+          </div>
+        }
+
+        <div class="flex flex-col gap-3 min-h-[400px]">
+          @for (field of state.formFields(); track field.id) {
+            <div cdkDrag (click)="state.selectField(field.id)"
+                 class="group relative bg-white/40 backdrop-blur-md border rounded-2xl p-4 hover:border-[var(--color-primary)]/60 hover:bg-white/60 transition-all shadow-sm cursor-grab flex items-center gap-4"
+                 [class.border-[var(--color-primary)]]="state.selectedFieldId() === field.id"
+                 [class.ring-2]="state.selectedFieldId() === field.id"
+                 [class.ring-[var(--color-primary)]]="state.selectedFieldId() === field.id"
+                 [class.border-[var(--color-outline-variant)]/50]="state.selectedFieldId() !== field.id">
+              
+              <!-- Drag Handle -->
+              <div cdkDragHandle class="cursor-grab p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-all flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">drag_indicator</span>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-center mb-1 gap-2">
+                  <label class="text-sm font-bold text-[var(--color-on-surface)] font-display flex items-center gap-2 truncate">
+                    {{ field.label }}
+                    @if (field.required) {
+                      <span class="text-red-500">*</span>
+                    }
+                  </label>
+                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-[var(--color-primary)]/10 text-[var(--color-primary)] uppercase tracking-wider border border-[var(--color-primary)]/20 shrink-0">{{ field.type }}</span>
+                </div>
+                <p class="text-xs text-[var(--color-on-surface-variant)] font-medium truncate">{{ field.placeholder || 'No placeholder set' }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FLOATING RIGHT PANEL (Config) -->
+  <aside class="absolute top-[120px] right-8 bottom-8 w-80 z-20 flex flex-col bg-[var(--color-surface-container-low)]/40 backdrop-blur-2xl border border-[var(--color-outline-variant)]/20 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300">
+    
+    <!-- TABS -->
+    <div class="flex border-b border-[var(--color-outline-variant)]/10 shrink-0">
+      <button (click)="state.activeSidebarTab.set('theme')" class="flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all border-b-2"
+              [class.text-[var(--color-primary)]]="state.activeSidebarTab() === 'theme'"
+              [class.border-[var(--color-primary)]]="state.activeSidebarTab() === 'theme'"
+              [class.text-[var(--color-on-surface-variant)]]="state.activeSidebarTab() !== 'theme'"
+              [class.border-transparent]="state.activeSidebarTab() !== 'theme'">
+        Theme
+      </button>
+      <button (click)="state.activeSidebarTab.set('field')" class="flex-1 py-4 text-xs font-bold uppercase tracking-widest transition-all border-b-2"
+              [class.text-[var(--color-primary)]]="state.activeSidebarTab() === 'field'"
+              [class.border-[var(--color-primary)]]="state.activeSidebarTab() === 'field'"
+              [class.text-[var(--color-on-surface-variant)]]="state.activeSidebarTab() !== 'field'"
+              [class.border-transparent]="state.activeSidebarTab() !== 'field'">
+        Properties
+      </button>
+    </div>
+    
+    <div class="p-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar flex-1">
+      @if (state.activeSidebarTab() === 'theme') {
+        <!-- Theme Selector -->
+        <div class="flex flex-col gap-3">
+          <label class="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Form Theme (20+ Styles)</label>
+          <div class="relative">
+            <select [value]="state.selectedTheme().id" (change)="onThemeChange($event)" class="w-full appearance-none rounded-xl bg-[var(--color-surface-container-high)]/80 border border-[var(--color-outline-variant)]/20 p-3.5 pr-10 text-sm text-[var(--color-on-surface)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all backdrop-blur-md cursor-pointer">
+              @for (theme of state.themes; track theme.id) {
+                <option [value]="theme.id">{{ theme.category }} — {{ theme.name }}</option>
+              }
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[var(--color-primary)]">
+              <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+          </div>
+          
+          <!-- Theme Preview Mini Card -->
+          <div class="mt-2 p-4 rounded-2xl flex flex-col gap-3 shadow-lg transition-all duration-300 relative overflow-hidden group"
+               [style.background]="state.themeStyles()['--t-bg']"
+               [style.border]="state.themeStyles()['--t-input-border']">
+            <div class="h-8 w-full rounded-lg px-3 flex items-center shadow-sm"
+                 [style.background]="state.themeStyles()['--t-surface-high']"
+                 [style.border]="state.themeStyles()['--t-input-border']">
+              <div class="h-2 w-1/2 rounded" [style.background]="state.themeStyles()['--t-text-muted']"></div>
+            </div>
+            <div class="h-8 w-full rounded-lg flex items-center justify-center text-xs font-bold shadow-md transition-transform group-hover:scale-[1.02]" 
+                 [style.background]="state.themeStyles()['--t-primary']"
+                 [style.color]="state.themeStyles()['--t-on-primary']"
+                 [style.border-radius]="state.themeStyles()['--t-radius-input']">
+              Preview Button
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Selector -->
+        <div class="flex flex-col gap-3">
+          <label class="text-xs font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Layout Style</label>
+          <div class="flex flex-col gap-2">
+            @for (layout of state.layouts; track layout) {
+              <button (click)="state.setLayout(layout)"
+                class="px-4 py-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-between"
+                [class.border-[var(--color-primary)]]="state.selectedLayout() === layout"
+                [class.bg-[var(--color-primary)]/5]="state.selectedLayout() === layout"
+                [class.text-[var(--color-primary)]]="state.selectedLayout() === layout"
+                [class.border-[var(--color-outline-variant)]/30]="state.selectedLayout() !== layout"
+                [class.text-[var(--color-on-surface-variant)]]="state.selectedLayout() !== layout">
+                {{ layout }}
+                @if (state.selectedLayout() === layout) {
+                  <span class="material-symbols-outlined text-sm">check_circle</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- FIELD PROPERTIES TAB -->
+        @if (state.selectedField(); as activeField) {
+          <div class="flex flex-col gap-5">
+            <!-- Field Label -->
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Field Label</label>
+              <input type="text" [value]="activeField.label" (input)="state.updateSelectedField({label: $any($event.target).value})"
+                     class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-3 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+            </div>
+            
+            <!-- Placeholder -->
+            @if (['text', 'textarea', 'email', 'number', 'password'].includes(activeField.type)) {
+              <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Placeholder Text</label>
+                <input type="text" [value]="activeField.placeholder || ''" (input)="state.updateSelectedField({placeholder: $any($event.target).value})"
+                       class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-3 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+              </div>
+            }
+
+            <!-- Validation Rules -->
+            <div class="flex flex-col gap-3">
+              <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Validation Rules</label>
+              
+              <label class="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 cursor-pointer hover:border-[var(--color-primary)]/40 transition-all">
+                <input type="checkbox" [checked]="activeField.required" (change)="state.updateSelectedField({required: $any($event.target).checked})"
+                       class="w-4 h-4 rounded accent-[var(--color-primary)]">
+                <div class="flex flex-col">
+                  <span class="text-sm font-semibold">Required Field</span>
+                  <span class="text-xs text-[var(--color-on-surface-variant)]">Must be filled before submit</span>
+                </div>
+              </label>
+
+              @if (['text', 'textarea', 'password'].includes(activeField.type)) {
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Min Length</label>
+                    <input type="number" min="0" [value]="activeField.minLength || ''" (input)="state.updateSelectedField({minLength: $any($event.target).value ? +$any($event.target).value : null})"
+                           placeholder="e.g. 8"
+                           class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Max Length</label>
+                    <input type="number" min="0" [value]="activeField.maxLength || ''" (input)="state.updateSelectedField({maxLength: $any($event.target).value ? +$any($event.target).value : null})"
+                           placeholder="e.g. 500"
+                           class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Delete Button -->
+            <button (click)="state.deleteSelectedField()" class="mt-2 py-3 rounded-xl border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all text-sm font-bold flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">delete</span> Remove Field
+            </button>
+          </div>
+        } @else {
+          <div class="flex flex-col items-center justify-center flex-1 text-center opacity-40">
+            <span class="material-symbols-outlined text-5xl mb-3">touch_app</span>
+            <p class="text-sm font-medium px-4">Click a field on the canvas to configure its properties.</p>
+          </div>
+        }
+      }
+    </div>
+  </aside>
+
+} @else {
+  <!-- TRUE PREVIEW MODE -->
+  <div class="absolute inset-0 z-50 overflow-y-auto transition-all duration-500" [ngStyle]="state.themeStyles()" style="background: var(--t-bg); color: var(--t-text); font-family: var(--t-font);">
+    
+    <!-- Exit Button -->
+    <button (click)="state.togglePreview()" class="fixed top-6 right-6 z-50 px-6 py-2.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/40 transition-all flex items-center gap-2 shadow-xl hover:scale-105">
+      <span class="material-symbols-outlined text-sm">close</span> Exit Preview
+    </button>
+
+    <div class="min-h-screen flex items-center justify-center p-8 lg:p-12">
+      <div class="w-full max-w-4xl p-8 lg:p-12 transition-all duration-500"
+           style="background: var(--t-surface); border: var(--t-input-border); border-radius: var(--t-radius-card); box-shadow: var(--t-shadow); backdrop-filter: blur(var(--t-blur));">
+        
+        <div class="mb-10 text-center">
+          <h1 class="text-4xl font-bold mb-3" style="color: var(--t-text);">Generated Form</h1>
+          <p style="color: var(--t-text-muted);">Theme: {{ state.selectedTheme().name }}</p>
+        </div>
+
+        <form [formGroup]="dynamicForm" class="grid gap-6"
+              [class.grid-cols-1]="state.selectedLayout() !== 'Two-Column Grid'"
+              [class.grid-cols-2]="state.selectedLayout() === 'Two-Column Grid'"
+              [class.gap-4]="state.selectedLayout() === 'Compact'">
+          
+          @for (field of state.formFields(); track field.id) {
+            <div class="flex flex-col gap-2" [class.col-span-2]="field.type === 'textarea' && state.selectedLayout() === 'Two-Column Grid'">
+              <label class="text-sm font-semibold flex items-center gap-1" style="color: var(--t-text);">
+                {{ field.label }}
+                @if (field.required) { <span class="text-red-500">*</span> }
+              </label>
+              
+              @switch (field.type) {
+                @case ('textarea') {
+                  <textarea [id]="field.id" [formControlName]="field.id" rows="4" [placeholder]="field.placeholder || ''"
+                            class="w-full p-4 focus:outline-none transition-all resize-y"
+                            style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input); color: var(--t-text);"></textarea>
+                }
+                @case ('checkbox') {
+                  <label class="flex items-center gap-3 p-4 cursor-pointer transition-colors"
+                         style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input);">
+                    <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-5 h-5 rounded" style="accent-color: var(--t-primary);">
+                    <span class="text-sm" style="color: var(--t-text);">{{ field.label }}</span>
+                  </label>
+                }
+                @case ('radio') {
+                  <label class="flex items-center gap-3 p-4 cursor-pointer transition-colors"
+                         style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input);">
+                    <input type="radio" [id]="field.id" [formControlName]="field.id" value="option1" class="w-5 h-5" style="accent-color: var(--t-primary);">
+                    <span class="text-sm" style="color: var(--t-text);">{{ field.label }}</span>
+                  </label>
+                }
+                @case ('select') {
+                  <div class="relative">
+                    <select [id]="field.id" [formControlName]="field.id" class="w-full appearance-none p-4 focus:outline-none transition-all"
+                            style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input); color: var(--t-text);">
+                      <option value="">Select an option...</option>
+                      <option value="1">Option 1</option>
+                      <option value="2">Option 2</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4" style="color: var(--t-text-muted);">
+                      <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                  </div>
+                }
+                @case ('toggle') {
+                  <label class="flex items-center gap-4 p-4 cursor-pointer"
+                         style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input);">
+                    <div class="relative inline-block w-12 h-6 shrink-0">
+                      <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="peer sr-only">
+                      <div class="block w-12 h-6 rounded-full bg-black/20 peer-checked:bg-[var(--t-primary)] transition-colors duration-200"></div>
+                      <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 peer-checked:translate-x-6 shadow"></div>
+                    </div>
+                    <span class="text-sm font-medium" style="color: var(--t-text);">{{ field.label }}</span>
+                  </label>
+                }
+                @case ('rating') {
+                  <div class="flex items-center gap-3 p-4"
+                       style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input);">
+                    <input type="hidden" [id]="field.id" [formControlName]="field.id">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <span class="material-symbols-outlined text-2xl cursor-pointer hover:scale-110 transition-transform" 
+                            [style.color]="(dynamicForm.get(field.id)?.value || 0) >= star ? 'var(--t-primary)' : 'var(--t-text-muted)'"
+                            (click)="dynamicForm.get(field.id)?.setValue(star)">star</span>
+                    }
+                  </div>
+                }
+                @case ('file') {
+                  <label class="flex flex-col items-center justify-center p-8 border-2 border-dashed cursor-pointer transition-all hover:opacity-80"
+                         style="background: var(--t-surface-high); border-color: var(--t-primary); border-radius: var(--t-radius-input);">
+                    <span class="material-symbols-outlined text-4xl mb-2" style="color: var(--t-primary);">upload_file</span>
+                    <span class="text-sm font-bold" style="color: var(--t-text);">Click to select a file</span>
+                    <span class="text-xs mt-1" style="color: var(--t-text-muted);">PDF, JPG, PNG (Max 10MB)</span>
+                    <input type="file" [id]="field.id" class="hidden">
+                  </label>
+                }
+                @case ('password') {
+                  <div class="relative">
+                    <input [type]="state.showPasswords()[field.id] ? 'text' : 'password'" [id]="field.id" [formControlName]="field.id"
+                           class="w-full p-4 pr-12 focus:outline-none transition-all"
+                           style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input); color: var(--t-text);"
+                           [placeholder]="field.placeholder || ''">
+                    <button type="button" (click)="state.togglePasswordVisibility(field.id)"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-black/5 rounded-full transition-colors"
+                            style="color: var(--t-text-muted);">
+                      <span class="material-symbols-outlined text-xl">{{ state.showPasswords()[field.id] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                }
+                @default {
+                  <input [type]="field.type" [id]="field.id" [formControlName]="field.id"
+                         class="w-full p-4 focus:outline-none transition-all"
+                         style="background: var(--t-surface-high); border: var(--t-input-border); border-radius: var(--t-radius-input); color: var(--t-text);"
+                         [placeholder]="field.placeholder || ''">
+                }
+              }
+            </div>
+          }
+
+          <div class="mt-8 pt-8 flex justify-end" style="border-top: 1px solid var(--t-border);" [class.col-span-2]="state.selectedLayout() === 'Two-Column Grid'">
+            <button [disabled]="dynamicForm.invalid"
+                    class="px-8 py-3.5 font-bold transition-all shadow-lg hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style="background: var(--t-primary); color: var(--t-on-primary); border-radius: var(--t-radius-input);">
+              Submit Form
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+}
