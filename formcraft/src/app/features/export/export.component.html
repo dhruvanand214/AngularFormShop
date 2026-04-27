@@ -3,7 +3,7 @@
   <!-- Top Nav -->
   <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <a routerLink="/" class="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm group">
+      <a routerLink="/builder" class="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm group">
         <span class="material-symbols-outlined text-sm group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
         Back to Builder
       </a>
@@ -14,6 +14,21 @@
       </div>
     </div>
     <div class="flex items-center gap-3 text-xs text-white/40">
+      @if (state.currentFormId()) {
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[14px]">cloud_done</span>
+          Cloud Hosted
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-mono text-white/50 text-[11px]" title="Your Form ID">
+          <span class="material-symbols-outlined text-[12px] text-white/30">tag</span>
+          {{ state.currentFormId()!.slice(0, 8) }}…
+        </div>
+      } @else {
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/40 font-bold uppercase tracking-wider">
+          <span class="material-symbols-outlined text-[14px]">cloud_off</span>
+          Local Only
+        </div>
+      }
       <span class="px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold uppercase tracking-wider">
         {{ state.formFields().length }} Fields
       </span>
@@ -124,7 +139,7 @@
             <span class="material-symbols-outlined text-6xl">inbox</span>
             <p class="text-lg font-bold">No fields in your form yet.</p>
             <p class="text-sm">Go back to the builder and add some fields first.</p>
-            <a routerLink="/" class="mt-4 px-6 py-2.5 rounded-xl bg-violet-500/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 transition-all text-sm font-bold flex items-center gap-2">
+            <a routerLink="/builder" class="mt-4 px-6 py-2.5 rounded-xl bg-violet-500/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 transition-all text-sm font-bold flex items-center gap-2">
               <span class="material-symbols-outlined text-sm">arrow_back</span> Go to Builder
             </a>
           </div>
@@ -146,25 +161,25 @@
             @case ('html') {
               <p class="text-xs text-white/40 flex items-center gap-2">
                 <span class="material-symbols-outlined text-xs text-amber-400">info</span>
-                No build tools required. Drop this code into any HTML page. The <strong class="text-white/70">jsDelivr CDN</strong> serves the renderer directly from npm.
+                <strong class="text-white/70">Cloud Mode:</strong> No manual fetching required. The renderer uses your <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">formId</code> to securely load the latest schema from FormCraft Cloud.
               </p>
             }
             @case ('angular') {
               <p class="text-xs text-white/40 flex items-center gap-2">
                 <span class="material-symbols-outlined text-xs text-red-400">info</span>
-                Using the <strong class="text-white/70">formcraft-renderer</strong> npm package means you don't need to reinvent the wheel. It natively injects the form inside an Angular component wrapper.
+                <strong class="text-white/70">Cloud Mode:</strong> Pass your <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">formId</code> directly to the component. The <strong class="text-white/70">formcraft-renderer</strong> handles the async lifecycle and data fetching internally.
               </p>
             }
             @case ('react') {
               <p class="text-xs text-white/40 flex items-center gap-2">
                 <span class="material-symbols-outlined text-xs text-sky-400">info</span>
-                Perfect for <strong class="text-white/70">React 18</strong> and <strong class="text-white/70">Next.js</strong>. Just run <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">npm install formcraft-renderer</code> and mount it in a useEffect.
+                <strong class="text-white/70">Cloud Mode:</strong> Integration simplified to 3 lines. Mount the component, provide the <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">formId</code>, and let FormCraft handle the rest.
               </p>
             }
             @case ('vue') {
               <p class="text-xs text-white/40 flex items-center gap-2">
                 <span class="material-symbols-outlined text-xs text-emerald-400">info</span>
-                Works beautifully with <strong class="text-white/70">Vue 3</strong>. Run <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">npm install formcraft-renderer</code> and use onMounted to initialize.
+                <strong class="text-white/70">Cloud Mode:</strong> Use the <code class="bg-white/5 px-1.5 py-0.5 rounded text-white/60">formId</code> prop for zero-config rendering. Syncs instantly with any changes you make in the FormCraft builder.
               </p>
             }
             @case ('flutter') {

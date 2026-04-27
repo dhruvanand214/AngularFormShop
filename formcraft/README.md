@@ -1,59 +1,100 @@
-# Formcraft
+# ✨ FormCraft: The Ethereal Form Architect
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.8.
+![FormCraft Banner](public/banner.png)
 
-## Development server
+**FormCraft** is a premium, high-performance SaaS platform for building stunning, dynamic forms with zero code. Designed with a focus on **Glassmorphism** and **User Experience**, FormCraft allows you to drag, drop, and deploy production-ready forms in seconds.
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
+## 🚀 Key Features
+
+- 💎 **Ethereal UI**: Beautifully crafted glassmorphism components with over 20+ premium themes.
+- 🏗️ **Drag & Drop Builder**: Intuitively build complex forms with a real-time reactive preview.
+- ☁️ **Cloud Sync**: Powered by **Supabase**, your forms are saved instantly and accessible from anywhere.
+- 🔐 **Secure by Design**: Built-in strong password validation and Row Level Security (RLS).
+- 📦 **Universal Renderer**: A zero-dependency Vanilla JS SDK to embed your forms on *any* website (React, Vue, Angular, or plain HTML).
+- 📊 **Developer Friendly**: Export clean JSON schemas or framework-specific code snippets.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Angular 21 (Signals, Standalone Components, Reactive Forms)
+- **Styling**: Tailwind CSS + Custom Vanilla CSS Variables
+- **Backend**: Supabase (PostgreSQL, Auth, Realtime)
+- **Testing**: Vitest + JSDOM
+- **Build System**: Angular Application Builder (Vite-based)
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/formcraft.git
+   cd formcraft
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Setup Environment:
+   Create `src/environments/environment.ts` and add your Supabase credentials:
+   ```typescript
+   export const environment = {
+     production: false,
+     supabaseUrl: 'YOUR_SUPABASE_URL',
+     supabaseKey: 'YOUR_SUPABASE_ANON_KEY'
+   };
+   ```
+4. Run the development server:
+   ```bash
+   npm start
+   ```
+
+---
+
+## 🧩 The Renderer SDK
+
+Want to use your FormCraft forms on another site? Use our standalone renderer:
+
+```html
+<!-- Include the SDK -->
+<script src="https://cdn.jsdelivr.net/gh/your-username/formcraft-renderer@latest/src/renderer.js"></script>
+
+<!-- Render your form -->
+<div id="form-root"></div>
+<script>
+  FormCraft.render({
+    target: '#form-root',
+    formId: 'your-form-uuid',
+    onSubmit: (data) => console.log('Form Submitted:', data)
+  });
+</script>
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## 🧪 Testing
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+We take stability seriously. Run the comprehensive test suite with:
 ```bash
-ng generate component component-name
+npm test
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
-```
+## 📜 License
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
-## Building
+## 🤝 Contributing
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-To build the project run:
+---
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Developed with ❤️ by [Dhruv Anand](https://github.com/dhruvanand214)

@@ -25,6 +25,8 @@ export class FormStateService {
   layouts = ['Standard', 'Compact', 'Two-Column Grid'];
 
   // State Signals
+  currentFormId = signal<string | null>(null);
+  formName = signal<string>('Untitled Form');
   formFields = signal<any[]>([]);
   selectedFieldId = signal<string | null>(null);
   activeSidebarTab = signal<'theme' | 'field'>('theme');
@@ -91,5 +93,40 @@ export class FormStateService {
     this.formFields.set(currentFields);
     this.selectedFieldId.set(null);
     this.activeSidebarTab.set('theme');
+  }
+
+  getSchema() {
+    return {
+      metadata: {
+        formcraftVersion: '2.0',
+        theme: this.selectedTheme().id,
+        themeName: this.selectedTheme().name,
+        layout: this.selectedLayout(),
+        name: this.formName()
+      },
+      fields: this.formFields()
+    };
+  }
+
+  loadSchema(schema: any, formId: string) {
+    if (!schema) return;
+    
+    this.currentFormId.set(formId);
+    this.formName.set(schema.metadata?.name || 'Untitled Form');
+    this.formFields.set(schema.fields || []);
+    this.selectedLayout.set(schema.metadata?.layout || 'Standard');
+    
+    if (schema.metadata?.theme) {
+      this.setTheme(schema.metadata.theme);
+    }
+  }
+
+  clearState() {
+    this.currentFormId.set(null);
+    this.formName.set('Untitled Form');
+    this.formFields.set([]);
+    this.selectedFieldId.set(null);
+    this.selectedLayout.set('Standard');
+    this.selectedTheme.set(FORM_THEMES[0]);
   }
 }

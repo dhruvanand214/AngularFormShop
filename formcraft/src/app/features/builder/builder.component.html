@@ -5,8 +5,34 @@
     <span class="text-xs text-[var(--color-on-surface-variant)] tracking-widest uppercase">Ethereal Architect</span>
   </div>
   <div class="flex items-center gap-3">
-    <a routerLink="/export"
-       class="px-5 py-2.5 rounded-xl border border-[var(--color-outline-variant)]/30 text-[var(--color-primary)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/10 transition-all flex items-center gap-2 text-sm font-medium">
+    @if (supabase.currentUser()) {
+      <button (click)="saveForm()" [disabled]="isSaving()"
+              class="px-5 py-2.5 rounded-xl border border-[var(--color-primary)]/30 text-[var(--color-primary)] bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)]/20 transition-all flex items-center gap-2 text-sm font-medium disabled:opacity-50">
+        @if (isSaving()) {
+          <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          Saving...
+        } @else if (saveSuccess()) {
+          <span class="material-symbols-outlined text-sm">check</span>
+          Saved!
+        } @else {
+          <span class="material-symbols-outlined text-sm">cloud_upload</span>
+          Save to Cloud
+        }
+      </button>
+      <a routerLink="/dashboard"
+         class="px-4 py-2.5 rounded-xl border border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface-variant)] hover:border-[var(--color-on-surface-variant)]/50 transition-all flex items-center gap-2 text-sm font-medium">
+        <span class="material-symbols-outlined text-sm">dashboard</span>
+      </a>
+    } @else {
+      <a routerLink="/auth"
+         class="px-5 py-2.5 rounded-xl border border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface-variant)] hover:border-[var(--color-on-surface-variant)]/50 transition-all flex items-center gap-2 text-sm font-medium">
+        <span class="material-symbols-outlined text-sm">login</span>
+        Sign In
+      </a>
+    }
+
+    <a [routerLink]="state.currentFormId() ? ['/export', state.currentFormId()] : ['/export']"
+       class="px-5 py-2.5 rounded-xl border border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface-variant)] hover:border-[var(--color-on-surface-variant)]/50 transition-all flex items-center gap-2 text-sm font-medium">
       <span class="material-symbols-outlined text-sm">code</span>
       Export Code
     </a>
@@ -45,14 +71,15 @@
   </aside>
 
   <!-- CENTER WORKSPACE -->
-  <main class="absolute inset-0 z-10 flex justify-center pt-[120px] px-[360px] pb-8 overflow-y-auto custom-scrollbar">
-    <div class="w-full max-w-3xl flex flex-col gap-6 relative">
+  <main class="absolute inset-0 z-10 flex flex-col items-center pt-[140px] pb-40 overflow-y-auto custom-scrollbar">
+    <div class="w-full max-w-3xl flex flex-col gap-6 px-6">
       <!-- Canvas Container -->
-      <div class="w-full min-h-[600px] bg-[var(--color-surface-container)]/30 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 rounded-[2rem] shadow-2xl p-8 pb-32 transition-all relative"
+      <div class="w-full min-h-[600px] h-fit bg-[var(--color-surface-container)]/30 backdrop-blur-xl border border-[var(--color-outline-variant)]/20 rounded-[2.5rem] shadow-2xl p-10 pb-20 transition-all relative"
            cdkDropList id="canvasList" [cdkDropListData]="state.formFields()" (cdkDropListDropped)="drop($event)">
         
         <div class="mb-8 border-b border-[var(--color-outline-variant)]/20 pb-4">
-          <input type="text" class="bg-transparent border-none outline-none text-3xl font-display font-bold text-[var(--color-on-surface)] placeholder-[var(--color-on-surface-variant)]/50 w-full" placeholder="Untitled Form">
+          <input type="text" [value]="state.formName()" (input)="state.formName.set($any($event.target).value)"
+                 class="bg-transparent border-none outline-none text-3xl font-display font-bold text-[var(--color-on-surface)] placeholder-[var(--color-on-surface-variant)]/50 w-full" placeholder="Untitled Form">
         </div>
 
         @if (state.formFields().length === 0) {
@@ -192,36 +219,185 @@
               </div>
             }
 
-            <!-- Validation Rules -->
+            <!-- Required Toggle (all fields) -->
             <div class="flex flex-col gap-3">
-              <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Validation Rules</label>
-              
+              <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Validation</label>
               <label class="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 cursor-pointer hover:border-[var(--color-primary)]/40 transition-all">
-                <input type="checkbox" [checked]="activeField.required" (change)="state.updateSelectedField({required: $any($event.target).checked})"
-                       class="w-4 h-4 rounded accent-[var(--color-primary)]">
+                <input type="checkbox" [checked]="activeField.required" (change)="state.updateSelectedField({required: $any($event.target).checked})" class="w-4 h-4 rounded accent-[var(--color-primary)]">
                 <div class="flex flex-col">
                   <span class="text-sm font-semibold">Required Field</span>
                   <span class="text-xs text-[var(--color-on-surface-variant)]">Must be filled before submit</span>
                 </div>
               </label>
+            </div>
 
-              @if (['text', 'textarea', 'password'].includes(activeField.type)) {
+            <!-- TEXT / TEXTAREA -->
+            @if (['text', 'textarea'].includes(activeField.type)) {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Length Limits</label>
                 <div class="grid grid-cols-2 gap-3">
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Min Length</label>
-                    <input type="number" min="0" [value]="activeField.minLength || ''" (input)="state.updateSelectedField({minLength: $any($event.target).value ? +$any($event.target).value : null})"
-                           placeholder="e.g. 8"
-                           class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase tracking-wider">Min</label>
+                    <input type="number" min="0" [value]="activeField.minLength || ''" (input)="state.updateSelectedField({minLength: $any($event.target).value ? +$any($event.target).value : null})" placeholder="0" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
                   </div>
                   <div class="flex flex-col gap-1.5">
-                    <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Max Length</label>
-                    <input type="number" min="0" [value]="activeField.maxLength || ''" (input)="state.updateSelectedField({maxLength: $any($event.target).value ? +$any($event.target).value : null})"
-                           placeholder="e.g. 500"
-                           class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none transition-all">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase tracking-wider">Max</label>
+                    <input type="number" min="0" [value]="activeField.maxLength || ''" (input)="state.updateSelectedField({maxLength: $any($event.target).value ? +$any($event.target).value : null})" placeholder="500" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
                   </div>
                 </div>
-              }
-            </div>
+                @if (activeField.type === 'textarea') {
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase tracking-wider">Rows</label>
+                    <input type="number" min="2" max="20" [value]="activeField.rows || 4" (input)="state.updateSelectedField({rows: +$any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- PASSWORD -->
+            @if (activeField.type === 'password') {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Password Strength</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button (click)="state.updateSelectedField({passwordStrength: 'normal'})"
+                          class="py-2.5 rounded-xl border text-xs font-bold transition-all"
+                          [class.bg-[var(--color-primary)]/10]="(activeField.passwordStrength || 'normal') === 'normal'"
+                          [class.border-[var(--color-primary)]]="(activeField.passwordStrength || 'normal') === 'normal'"
+                          [class.text-[var(--color-primary)]]="(activeField.passwordStrength || 'normal') === 'normal'"
+                          [class.border-[var(--color-outline-variant)]/30]="(activeField.passwordStrength || 'normal') !== 'normal'"
+                          [class.text-[var(--color-on-surface-variant)]]="(activeField.passwordStrength || 'normal') !== 'normal'">
+                    Normal
+                  </button>
+                  <button (click)="state.updateSelectedField({passwordStrength: 'strong'})"
+                          class="py-2.5 rounded-xl border text-xs font-bold transition-all"
+                          [class.bg-[var(--color-primary)]/10]="activeField.passwordStrength === 'strong'"
+                          [class.border-[var(--color-primary)]]="activeField.passwordStrength === 'strong'"
+                          [class.text-[var(--color-primary)]]="activeField.passwordStrength === 'strong'"
+                          [class.border-[var(--color-outline-variant)]/30]="activeField.passwordStrength !== 'strong'"
+                          [class.text-[var(--color-on-surface-variant)]]="activeField.passwordStrength !== 'strong'">
+                    Strong
+                  </button>
+                </div>
+                @if (activeField.passwordStrength === 'strong') {
+                  <p class="text-[10px] text-[var(--color-on-surface-variant)] px-1">Strong requires uppercase, lowercase & a special character.</p>
+                }
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase tracking-wider">Min Length</label>
+                    <input type="number" min="1" max="15" [value]="activeField.minLength ?? 6" (input)="state.updateSelectedField({minLength: +$any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase tracking-wider">Max Length</label>
+                    <input type="number" min="1" max="64" [value]="activeField.maxLength ?? 15" (input)="state.updateSelectedField({maxLength: +$any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- NUMBER -->
+            @if (activeField.type === 'number') {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Number Range</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Min</label>
+                    <input type="number" [value]="activeField.minValue ?? ''" (input)="state.updateSelectedField({minValue: $any($event.target).value !== '' ? +$any($event.target).value : null})" placeholder="0" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Max</label>
+                    <input type="number" [value]="activeField.maxValue ?? ''" (input)="state.updateSelectedField({maxValue: $any($event.target).value !== '' ? +$any($event.target).value : null})" placeholder="100" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Step</label>
+                    <input type="number" [value]="activeField.step ?? 1" (input)="state.updateSelectedField({step: +$any($event.target).value})" placeholder="1" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- SELECT / RADIO OPTIONS -->
+            @if (['select', 'radio'].includes(activeField.type)) {
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Options</label>
+                  <button (click)="addOption(activeField)" class="text-xs font-bold text-[var(--color-primary)] flex items-center gap-1 hover:underline">
+                    <span class="material-symbols-outlined text-sm">add</span> Add
+                  </button>
+                </div>
+                @for (opt of (activeField.options || []); track $index) {
+                  <div class="flex items-center gap-2">
+                    <input type="text" [value]="opt.label" (input)="updateOptionLabel(activeField, $index, $any($event.target).value)" class="flex-1 rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                    <button (click)="removeOption(activeField, $index)" class="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-500/10 transition-colors">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                }
+                @if (!(activeField.options?.length)) {
+                  <p class="text-xs text-[var(--color-on-surface-variant)] opacity-60">No options yet. Click "Add" to create one.</p>
+                }
+              </div>
+            }
+
+            <!-- RATING -->
+            @if (activeField.type === 'rating') {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Rating Settings</label>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Max Stars</label>
+                  <input type="number" min="3" max="10" [value]="activeField.maxStars || 5" (input)="state.updateSelectedField({maxStars: +$any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                </div>
+              </div>
+            }
+
+            <!-- FILE UPLOAD -->
+            @if (activeField.type === 'file') {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">File Settings</label>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Accepted Types</label>
+                  <select [value]="activeField.accept || '*'" (change)="state.updateSelectedField({accept: $any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                    <option value="*">Any file</option>
+                    <option value="image/*">Images only (JPG, PNG, GIF)</option>
+                    <option value=".pdf">PDF only</option>
+                    <option value=".pdf,image/*">PDF + Images</option>
+                    <option value=".doc,.docx">Word Documents</option>
+                    <option value=".xls,.xlsx,.csv">Spreadsheets / CSV</option>
+                  </select>
+                </div>
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 cursor-pointer hover:border-[var(--color-primary)]/40 transition-all">
+                  <input type="checkbox" [checked]="activeField.multiple" (change)="state.updateSelectedField({multiple: $any($event.target).checked})" class="w-4 h-4 rounded accent-[var(--color-primary)]">
+                  <span class="text-sm font-semibold">Allow Multiple Files</span>
+                </label>
+              </div>
+            }
+
+            <!-- DATE -->
+            @if (activeField.type === 'date') {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Date Range</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Min Date</label>
+                    <input type="date" [value]="activeField.minDate || ''" (input)="state.updateSelectedField({minDate: $any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] text-[var(--color-on-surface-variant)] font-bold uppercase">Max Date</label>
+                    <input type="date" [value]="activeField.maxDate || ''" (input)="state.updateSelectedField({maxDate: $any($event.target).value})" class="w-full rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 p-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none">
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- CHECKBOX / TOGGLE -->
+            @if (['checkbox', 'toggle'].includes(activeField.type)) {
+              <div class="flex flex-col gap-3">
+                <label class="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Default State</label>
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-[var(--color-outline-variant)]/20 cursor-pointer hover:border-[var(--color-primary)]/40 transition-all">
+                  <input type="checkbox" [checked]="activeField.defaultChecked" (change)="state.updateSelectedField({defaultChecked: $any($event.target).checked})" class="w-4 h-4 rounded accent-[var(--color-primary)]">
+                  <span class="text-sm font-semibold">Checked by Default</span>
+                </label>
+              </div>
+            }
 
             <!-- Delete Button -->
             <button (click)="state.deleteSelectedField()" class="mt-2 py-3 rounded-xl border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all text-sm font-bold flex items-center justify-center gap-2">
@@ -352,11 +528,18 @@
                          [placeholder]="field.placeholder || ''">
                 }
               }
+
+              @if (getFieldError(field.id, field.type, field.label); as errMsg) {
+                <p class="flex items-center gap-1.5 text-xs text-red-400 mt-1">
+                  <span class="material-symbols-outlined text-[14px]">error</span>
+                  {{ errMsg }}
+                </p>
+              }
             </div>
           }
 
           <div class="mt-8 pt-8 flex justify-end" style="border-top: 1px solid var(--t-border);" [class.col-span-2]="state.selectedLayout() === 'Two-Column Grid'">
-            <button [disabled]="dynamicForm.invalid"
+            <button (click)="dynamicForm.markAllAsTouched()" [disabled]="dynamicForm.invalid"
                     class="px-8 py-3.5 font-bold transition-all shadow-lg hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     style="background: var(--t-primary); color: var(--t-on-primary); border-radius: var(--t-radius-input);">
               Submit Form

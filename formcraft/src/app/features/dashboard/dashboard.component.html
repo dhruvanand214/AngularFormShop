@@ -1,0 +1,89 @@
+<div class="min-h-screen bg-[#05050a] text-white flex flex-col font-sans">
+
+  <!-- Header -->
+  <header
+    class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-white/[0.02] backdrop-blur-md shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+        <span class="material-symbols-outlined text-sm font-bold">dynamic_form</span>
+      </div>
+      <span class="font-bold text-lg tracking-tight">FormCraft</span>
+      <span
+        class="px-2 py-0.5 rounded-full bg-white/5 text-white/40 text-xs border border-white/10 ml-2">Dashboard</span>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <span class="text-sm text-white/50">{{ user()?.user_metadata?.['name'] }}</span>
+      <button (click)="logout()"
+        class="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">logout</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-auto p-8 max-w-7xl mx-auto w-full">
+
+    <div class="flex items-end justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-black tracking-tight mb-2">My Forms</h1>
+        <p class="text-white/50">Manage your created forms and view submissions.</p>
+      </div>
+      <button (click)="createNew()"
+        class="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-violet-500/25">
+        <span class="material-symbols-outlined text-sm">add</span> New Form
+      </button>
+    </div>
+
+    @if (loading()) {
+    <div class="flex flex-col items-center justify-center py-20 text-white/30 gap-4">
+      <span class="material-symbols-outlined animate-spin text-4xl">progress_activity</span>
+      <p>Loading your forms...</p>
+    </div>
+    } @else if (forms().length === 0) {
+    <div
+      class="border border-white/5 border-dashed rounded-3xl p-20 flex flex-col items-center justify-center text-center bg-white/[0.01]">
+      <div class="w-16 h-16 rounded-full bg-violet-500/10 flex items-center justify-center mb-6">
+        <span class="material-symbols-outlined text-3xl text-violet-400">inbox</span>
+      </div>
+      <h2 class="text-xl font-bold mb-2">No forms yet</h2>
+      <p class="text-white/50 mb-8 max-w-md">You haven't created any forms yet. Start building your first form to see it
+        here.</p>
+      <button (click)="createNew()"
+        class="bg-white/10 hover:bg-white/15 text-white px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">add</span> Create First Form
+      </button>
+    </div>
+    } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (form of forms(); track form.id) {
+      <div
+        class="bg-white/[0.03] border border-white/5 rounded-2xl p-6 hover:bg-white/[0.05] hover:border-white/10 transition-all group flex flex-col h-full cursor-pointer"
+        (click)="editForm(form)">
+
+        <div class="flex items-start justify-between mb-4">
+          <div
+            class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-lg">format_list_bulleted</span>
+          </div>
+          <button
+            class="w-8 h-8 rounded-lg hover:bg-red-500/20 flex items-center justify-center text-white/30 hover:text-red-400 transition-colors"
+            (click)="deleteForm(form.id); $event.stopPropagation()">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
+
+        <h3 class="text-lg font-bold mb-1 group-hover:text-violet-300 transition-colors">{{ form.name }}</h3>
+        <p class="text-xs text-white/40 mb-6 font-mono">{{ form.id }}</p>
+
+        <div class="mt-auto flex items-center justify-between pt-4 border-t border-white/5 text-xs text-white/50">
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">view_column</span>
+            {{ form.schema.fields?.length || 0 }} fields</span>
+          <span>Updated {{ form.updated_at | date:'shortDate' }}</span>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </main>
+</div>
