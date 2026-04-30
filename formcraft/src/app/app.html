@@ -12,6 +12,19 @@
     <router-outlet />
   </div>
 
+  @if (isAppLoading()) {
+    <div class="absolute inset-0 z-50 flex items-center justify-center bg-[var(--color-background)]/75 backdrop-blur-xl">
+      <div class="flex flex-col items-center gap-4">
+        <div class="relative h-20 w-20">
+          <div class="absolute inset-0 rounded-full border-4 border-[var(--color-primary)]/20"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--color-primary)] animate-spin"></div>
+          <div class="absolute inset-[14px] rounded-full bg-[var(--color-primary)]/15 animate-pulse"></div>
+        </div>
+        <p class="text-sm sm:text-base font-semibold tracking-wide text-[var(--color-on-surface)]">Preparing FormCraft...</p>
+      </div>
+    </div>
+  }
+
   <!-- Minimal Floating Footer -->
   <footer class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm text-[10px] text-[var(--color-on-surface-variant)]/60 font-medium tracking-wider uppercase transition-opacity hover:opacity-100 opacity-40">
     <span>Made with ❤️ by</span>
