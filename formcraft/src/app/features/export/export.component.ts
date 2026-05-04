@@ -128,7 +128,8 @@ export class DynamicFormComponent implements AfterViewInit {
   }
 }`;
         }
-        return `import { Component, ElementRef, ViewChild, AfterViewInit, Input } from '@angular/core';
+        return `npm install formcraft-renderer
+        import { Component, ElementRef, ViewChild, AfterViewInit, Input } from '@angular/core';
 import FormCraft from 'formcraft-renderer';
 
 @Component({
@@ -172,7 +173,8 @@ export default function DynamicForm() {
   return <div ref={formRef} />;
 }`;
         }
-        return `import { useEffect, useRef } from 'react';
+        return `npm install formcraft-renderer
+        import { useEffect, useRef } from 'react';
 import FormCraft from 'formcraft-renderer';
 
 const schema = ${schema};
@@ -218,7 +220,8 @@ onMounted(() => {
 });
 </script>`;
         }
-        return `<template>
+        return `<!-- npm install formcraft-renderer -->
+        <template>
   <div ref="formRoot"></div>
 </template>
 
